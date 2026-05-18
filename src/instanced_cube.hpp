@@ -81,9 +81,7 @@ class InstancedCube : public MeshObject {
 public:
 				InstancedCube(std::vector<VertexColor> aInstanceAttributes)
 								: mInstanceAttributes(std::move(aInstanceAttributes))
-
-				{
-				}
+				{}
 
 				virtual std::shared_ptr<AGeometry> getGeometry(GeometryFactory& aGeometryFactory, RenderStyle aRenderStyle) {
 								return std::make_shared<OGLGeometry>(generateInstancedCubeBuffers(mInstanceAttributes));

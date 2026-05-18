@@ -19,14 +19,13 @@
 
 #include <glm/gtx/string_cast.hpp>
 
+void toggle(const std::string& aToggleName, bool& aToggleValue) {
 
-void toggle(const std::string& toggleName, bool& toggleValue) {
-				toggleValue = !toggleValue;
-				std::cout << std::format("{}: {}\n", toggleName, toggleValue ? "ON" : "OFF");
+				aToggleValue = !aToggleValue;
+				std::cout << aToggleName << ": " << (aToggleValue ? "ON\n" : "OFF\n");
 }
 
-struct Config
-{
+struct Config {
 				int currentSceneIdx = 0;
 				bool showSolid = true;
 				bool showWireframe = false;
@@ -34,6 +33,7 @@ struct Config
 };
 
 int main() {
+				// Initialize GLFW
 				if (!glfwInit()) {
 								std::cerr << "Failed to initialize GLFW" << std::endl;
 								return -1;
@@ -44,21 +44,18 @@ int main() {
 								MouseTracking mouseTracking;
 								Config config;
 								Camera camera(window.aspectRatio());
-								camera.setRotation(glm::vec3(0.0f, 0.0f, -3.0f));
+								camera.setPosition(glm::vec3(0.0f, 0.0f, -3.0f));
 								camera.lookAt(glm::vec3());
 								window.onResize([&camera, &window](int width, int height) {
 												camera.setAspectRatio(window.aspectRatio());
 												});
 
-								// TODO: input processor
 								window.onCheckInput([&camera, &mouseTracking](GLFWwindow* aWin) {
 												mouseTracking.update(aWin);
 												if (glfwGetMouseButton(aWin, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 																camera.orbit(-0.4f * mouseTracking.offset(), glm::vec3());
 												}
 												});
-
-								// TODO: input processor
 								window.setKeyCallback([&config, &camera](GLFWwindow* aWin, int key, int scancode, int action, int mods) {
 												if (action == GLFW_PRESS) {
 																switch (key) {
@@ -75,6 +72,9 @@ int main() {
 																case GLFW_KEY_3:
 																				config.currentSceneIdx = 2;
 																				break;
+																case GLFW_KEY_4:
+																				config.currentSceneIdx = 3;
+																				break;
 																case GLFW_KEY_W:
 																				toggle("Show wireframe", config.showWireframe);
 																				break;
@@ -89,21 +89,31 @@ int main() {
 												});
 
 								OGLMaterialFactory materialFactory;
-								materialFactory.loadShadersFromDir("shaders/");
-								materialFactory.loadTexturesFromDir("resources/textures/");
+								materialFactory.loadShadersFromDir("./shaders/");
+								materialFactory.loadTexturesFromDir("./resources/textures/");
 
 								OGLGeometryFactory geometryFactory;
 
-								std::array<SimpleScene, 3> scenes{
+
+								std::array<SimpleScene, 4> scenes{
 									createCubeScene(materialFactory, geometryFactory),
 									createInstancedCubesScene(materialFactory, geometryFactory),
 									createMonkeyScene(materialFactory, geometryFactory),
+									createParticleScene(materialFactory, geometryFactory)
 								};
 
 								Renderer renderer(materialFactory);
 
+								float previousTime = static_cast<float>(glfwGetTime());
+
 								renderer.initialize();
 								window.runLoop([&] {
+												float currentTime = static_cast<float>(glfwGetTime());
+												float deltaTime = currentTime - previousTime;
+												previousTime = currentTime;
+
+												scenes[config.currentSceneIdx].update(deltaTime);
+
 												renderer.clear();
 												if (config.showSolid) {
 																GL_CHECK(glDisable(GL_POLYGON_OFFSET_LINE));
@@ -123,7 +133,6 @@ int main() {
 																renderer.renderSceneNormals(scenes[config.currentSceneIdx], camera, RenderOptions{ "solid" });
 												}
 												});
-
 				}
 				catch (ShaderCompilationError& exc) {
 								std::cerr

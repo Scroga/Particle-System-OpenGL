@@ -12,41 +12,49 @@
 
 namespace fs = std::filesystem;
 
-class OGLGeometry: public AGeometry {
+class OGLGeometry : public AGeometry {
 public:
-	OGLGeometry(IndexedBuffer buff) :
-		buffer(std::move(buff))
-	{}
-	IndexedBuffer buffer;
+				OGLGeometry(IndexedBuffer buff) :
+								buffer(std::move(buff))
+				{
+				}
+				IndexedBuffer buffer;
 
-	void bind() const {
-		GL_CHECK(glBindVertexArray(buffer.vao.get()));
-	}
+				void bind() const {
+								GL_CHECK(glBindVertexArray(buffer.vao.get()));
+				}
 
-	void draw() const {
-		draw(buffer.mode);
-	}
+				void draw() const {
+								draw(buffer.mode);
+				}
 
-	void draw(GLenum aMode) const {
-		if (buffer.instanceCount == 0) {
-			GL_CHECK(glDrawElements(aMode, buffer.indexCount, GL_UNSIGNED_INT, reinterpret_cast<void*>(0)));
-		} else {
-			GL_CHECK(glDrawElementsInstanced(aMode, buffer.indexCount, GL_UNSIGNED_INT, reinterpret_cast<void*>(0), buffer.instanceCount));
-		}
-	}
+				void draw(GLenum aMode) const {
+								if (buffer.instanceCount == 0) {
+												if (buffer.indexCount == 0)
+																GL_CHECK(glDrawArrays(aMode, 0, buffer.vertexCount));
+												else
+																GL_CHECK(glDrawElements(aMode, buffer.indexCount, GL_UNSIGNED_INT, reinterpret_cast<void*>(0)));
+								}
+								else {
+												if (buffer.indexCount == 0)
+																GL_CHECK(glDrawArraysInstanced(aMode, 0, buffer.vertexCount, buffer.instanceCount));
+												else
+																GL_CHECK(glDrawElementsInstanced(aMode, buffer.indexCount, GL_UNSIGNED_INT, reinterpret_cast<void*>(0), buffer.instanceCount));
+								}
+				}
 };
 
-class OGLGeometryFactory: public GeometryFactory {
+class OGLGeometryFactory : public GeometryFactory {
 public:
-	std::shared_ptr<AGeometry> getAxisGizmo();
-	std::shared_ptr<AGeometry> getCube();
-	std::shared_ptr<AGeometry> getCubeOutline();
-	std::shared_ptr<AGeometry> getCubeNormTex();
+				std::shared_ptr<AGeometry> getAxisGizmo();
+				std::shared_ptr<AGeometry> getCube();
+				std::shared_ptr<AGeometry> getCubeOutline();
+				std::shared_ptr<AGeometry> getCubeNormTex();
 
-	std::shared_ptr<AGeometry> getPlane();
-	std::shared_ptr<AGeometry> getPlaneOutline();
+				std::shared_ptr<AGeometry> getPlane();
+				std::shared_ptr<AGeometry> getPlaneOutline();
 
-	std::shared_ptr<AGeometry> loadMesh(fs::path aMeshPath, RenderStyle aRenderStyle);
+				std::shared_ptr<AGeometry> loadMesh(fs::path aMeshPath, RenderStyle aRenderStyle);
 protected:
-	std::map<std::string, std::shared_ptr<OGLGeometry>> mObjects;
+				std::map<std::string, std::shared_ptr<OGLGeometry>> mObjects;
 };

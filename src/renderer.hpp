@@ -7,15 +7,6 @@
 #include "ogl_geometry_factory.hpp"
 
 
-#pragma once
-
-#include <vector>
-
-#include "camera.hpp"
-#include "ogl_material_factory.hpp"
-#include "ogl_geometry_factory.hpp"
-
-
 class Renderer {
 public:
 
@@ -25,8 +16,6 @@ public:
 								mShowNormalsShader = std::static_pointer_cast<OGLShaderProgram>(
 												mMaterialFactory.getShaderProgram("generate_normals"));
 				}
-
-
 
 				void initialize() {
 								GL_CHECK(glEnable(GL_DEPTH_TEST));

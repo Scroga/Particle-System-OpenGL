@@ -16,6 +16,7 @@ using VBOVector = std::vector<OpenGLResource>;
 struct IndexedBuffer {
 	OpenGLResource vao;
 	std::vector<OpenGLResource> vbos;
+	unsigned int vertexCount = 0;
 	unsigned int indexCount = 0;
 	unsigned int instanceCount = 0;
 	GLenum mode = GL_TRIANGLES;

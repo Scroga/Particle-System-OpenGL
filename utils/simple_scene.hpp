@@ -12,6 +12,12 @@ public:
 		mObjects.push_back(aNewObject);
 	}
 
+	void update(double aDeltaTime) {
+					for (auto& object : mObjects) {
+									object->update(aDeltaTime);
+					}
+	}
+
 	auto getObjects() const {
 		return mObjects | std::views::transform([](const auto &aPtr) -> const SceneObject& { return *aPtr; });
 	}

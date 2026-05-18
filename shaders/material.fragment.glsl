@@ -26,7 +26,6 @@ layout(binding = 2) uniform sampler2D u_normalTexture;
 layout(binding = 3) uniform sampler2D u_displacementTexture;
 layout(binding = 4) uniform sampler2D u_ambientOccTexture;
 layout(binding = 6) uniform sampler2D u_shadowMap;
-//layout(binding = 6) uniform sampler2DShadow u_shadowMap;
 
 uniform mat4 u_modelMat;
 uniform mat4 u_viewMat;

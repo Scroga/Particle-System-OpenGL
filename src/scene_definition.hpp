@@ -8,7 +8,7 @@
 #include "scene_object.hpp"
 #include "cube.hpp"
 #include "instanced_cube.hpp"
-// #include "instanced_mesh_object.hpp"
+#include "particle_generator.hpp"
 
 #include "material_factory.hpp"
 #include "geometry_factory.hpp"
@@ -21,6 +21,7 @@ constexpr unsigned int PARALLAX = 1 << 3;
 constexpr unsigned int AMBIENT_OCC = 1 << 4;
 constexpr unsigned int SHADOW = 1 << 5;
 constexpr unsigned int DEBUG = 1 << 7;
+
 
 inline SimpleScene createCubeScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
 				SimpleScene scene;
@@ -129,11 +130,31 @@ inline SimpleScene createInstancedCubesScene(MaterialFactory& aMaterialFactory, 
 				return scene;
 }
 
+inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
+				SimpleScene scene;
+
+				auto particleGenerator = std::make_shared<ParticleGenerator>(10);
+				particleGenerator->addMaterial(
+								"solid",
+								MaterialParameters(
+												"particles",
+												RenderStyle::Solid,
+												{
+													{"u_solidColor", glm::vec4(0,0.5,0.7,1)}
+												}
+								)
+				);
+
+				particleGenerator->prepareRenderData(aMaterialFactory, aGeometryFactory);
+
+				scene.addObject(particleGenerator);
+				return scene;
+}
 
 inline SimpleScene createMonkeyScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
 				SimpleScene scene;
 				{
-								auto mesh = std::make_shared<LoadedMeshObject>("resources/geometry/monkey.obj");
+								auto mesh = std::make_shared<LoadedMeshObject>("./resources/geometry/monkey.obj");
 								mesh->setScale(glm::vec3(0.5));
 								mesh->setPosition(glm::vec3(-0.7, 0.0f, 0.0f));
 								mesh->setRotation(glm::vec3(0.0f, glm::radians(180.0f), 0.0f));
@@ -168,7 +189,7 @@ inline SimpleScene createMonkeyScene(MaterialFactory& aMaterialFactory, Geometry
 				{
 								int innerFactor = 3;
 								int outerFactor = 3;
-								auto mesh = std::make_shared<LoadedMeshObject>("resources/geometry/monkey.obj");
+								auto mesh = std::make_shared<LoadedMeshObject>("./resources/geometry/monkey.obj");
 								mesh->setScale(glm::vec3(0.5));
 								mesh->setPosition(glm::vec3(0.7, 0.0f, 0.0f));
 								mesh->setRotation(glm::vec3(0.0f, glm::radians(180.0f), 0.0f));

@@ -173,6 +173,13 @@ public:
 		glfwSetCursorPos(mWindow, winSize[0] / 2, winSize[1] / 2);
 	}
 
+	/**
+	* @brief Hides the cursor and locks it to the window for first-person camera control.
+	*/
+	void lockCursor() {
+					glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
 protected:
 	GLFWwindow* mWindow = nullptr;
 

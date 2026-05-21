@@ -14,6 +14,8 @@
 #include "geometry_factory.hpp"
 #include "simple_scene.hpp"
 
+#include "point_light.hpp"
+
 constexpr unsigned int DIFFUSE = 1;
 constexpr unsigned int SPECULAR = 1 << 1;
 constexpr unsigned int BUMP = 1 << 2;
@@ -21,6 +23,28 @@ constexpr unsigned int PARALLAX = 1 << 3;
 constexpr unsigned int AMBIENT_OCC = 1 << 4;
 constexpr unsigned int SHADOW = 1 << 5;
 constexpr unsigned int DEBUG = 1 << 7;
+
+
+inline std::shared_ptr<MeshObject> getFloor() {
+				auto plane = std::make_shared<LoadedMeshObject>("./resources/geometry/plane.obj");
+				plane->setScale(glm::vec3(100.0));
+				plane->setPosition(glm::vec3(0.0f, -3.0f, 0.0f));
+				plane->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+
+				plane->addMaterial(
+								"solid",
+								MaterialParameters(
+												"object_light",
+												RenderStyle::Solid,
+												{
+																{ "u_material.diffuse", glm::vec3(0.5f, 0.6f, 0.7f) },
+																{ "u_material.specular", glm::vec3(0.3f, 0.3f, 0.3f) },
+																{ "u_material.shininess", 32.0f }
+												}
+								)
+				);
+				return plane;
+}
 
 
 inline SimpleScene createCubeScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
@@ -137,10 +161,12 @@ inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, Geomet
 				particleGenerator->addMaterial(
 								"solid",
 								MaterialParameters(
-												"particles",
+												"particle",
 												RenderStyle::Solid,
 												{
-													{"u_solidColor", glm::vec4(0,0.5,0.7,1)}
+																{ "u_material.diffuse", glm::vec3(0.0f, 0.5f, 0.7f) },
+																{ "u_material.specular", glm::vec3(0.8f, 0.9f, 1.0f) },
+																{ "u_material.shininess", 32.0f }
 												}
 								)
 				);
@@ -148,6 +174,11 @@ inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, Geomet
 				particleGenerator->prepareRenderData(aMaterialFactory, aGeometryFactory);
 
 				scene.addObject(particleGenerator);
+
+				auto floor = getFloor();
+				floor->prepareRenderData(aMaterialFactory, aGeometryFactory);
+				scene.addObject(floor);
+
 				return scene;
 }
 

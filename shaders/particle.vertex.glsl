@@ -7,16 +7,16 @@ layout(location = 2) in vec4 in_instanceColor;
 layout(location = 3) in float in_instanceSize;
 
 out VS_OUT {
-    vec3 worldPosition;
+    vec3 position;
     vec4 color;
     float size;
 } vs_out;
 
 void main()
 {
-    vs_out.worldPosition = in_pointPos + in_instancePos;
+    vs_out.position = in_pointPos + in_instancePos;
     vs_out.color = in_instanceColor;
     vs_out.size = in_instanceSize;
 
-    gl_Position = vec4(vs_out.worldPosition, 1.0);
+    gl_Position = vec4(vs_out.position, 1.0);
 }

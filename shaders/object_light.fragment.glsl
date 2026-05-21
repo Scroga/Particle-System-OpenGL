@@ -22,11 +22,10 @@ uniform PointLight u_lightPoint;
 uniform Material u_material;
 uniform vec3 u_viewPos;
 
-in GS_OUT {
-    vec3 worldPos;
+in VS_OUT {
+    vec3 position;
     vec3 normal;
     vec2 texCoord;
-    vec4 color;
 } fs_in;
 
 out vec4 FragColor;
@@ -35,10 +34,10 @@ void main()
 {  
     vec3 norm = normalize(fs_in.normal);
 
-    vec3 lightDir = normalize(u_lightPoint.position - fs_in.worldPos);
+    vec3 lightDir = normalize(u_lightPoint.position - fs_in.position);
 
     // Attenuation calculations
-    float distance = length(u_lightPoint.position - fs_in.worldPos);
+    float distance = length(u_lightPoint.position - fs_in.position);
     float attenuation = 1.0 / (u_lightPoint.constant + u_lightPoint.linear * distance + u_lightPoint.quadratic * (distance * distance));
 
     // Ambient calculations
@@ -49,7 +48,7 @@ void main()
     vec3 diffuse  = u_lightPoint.diffuse * diff * u_material.diffuse;
 
     // Specular calculations
-    vec3 viewDir = normalize(u_viewPos - fs_in.worldPos);
+    vec3 viewDir = normalize(u_viewPos - fs_in.position);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_material.shininess);
     vec3 specular = u_lightPoint.specular * (spec * u_material.specular); 

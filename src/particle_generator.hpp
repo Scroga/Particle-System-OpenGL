@@ -41,14 +41,17 @@ private:
 								GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, mGeometry->buffer.vbos[1].get()));
 								GL_CHECK(glBufferData(GL_ARRAY_BUFFER, sizeof(ParticleAttributes) * mMaxParticlesCount, nullptr, GL_DYNAMIC_DRAW));
 
+								// position
 								GL_CHECK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ParticleAttributes), reinterpret_cast<void*>(offsetof(ParticleAttributes, position))));
 								GL_CHECK(glEnableVertexAttribArray(1));
 								GL_CHECK(glVertexAttribDivisor(1, 1));
 
+								// color
 								GL_CHECK(glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(ParticleAttributes), reinterpret_cast<void*>(offsetof(ParticleAttributes, color))));
 								GL_CHECK(glEnableVertexAttribArray(2));
 								GL_CHECK(glVertexAttribDivisor(2, 1));
 
+								// size
 								GL_CHECK(glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(ParticleAttributes), reinterpret_cast<void*>(offsetof(ParticleAttributes, size))));
 								GL_CHECK(glEnableVertexAttribArray(3));
 								GL_CHECK(glVertexAttribDivisor(3, 1));

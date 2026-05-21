@@ -9,6 +9,7 @@
 
 class Renderer {
 public:
+				glm::vec4 backgroundColor{0.0f};
 
 				Renderer(OGLMaterialFactory& aMaterialFactory)
 								: mMaterialFactory(aMaterialFactory)
@@ -19,15 +20,20 @@ public:
 
 				void initialize() {
 								GL_CHECK(glEnable(GL_DEPTH_TEST));
-								GL_CHECK(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+								GL_CHECK(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
 				}
 
 				void clear() {
+								GL_CHECK(glClearColor(
+												backgroundColor.x, 
+												backgroundColor.y, 
+												backgroundColor.z, 
+												backgroundColor.w));
 								GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 				}
 
-				template<typename TScene, typename TCamera>
-				void renderScene(const TScene& aScene, const TCamera& aCamera, RenderOptions aRenderOptions) {
+				template<typename TScene, typename TCamera, typename TLight>
+				void renderScene(const TScene& aScene, const TCamera& aCamera, const TLight light, RenderOptions aRenderOptions = RenderOptions{ "solid" }) {
 								auto projection = aCamera.getProjectionMatrix();
 								auto view = aCamera.getViewMatrix();
 
@@ -47,6 +53,15 @@ public:
 								fallbackParameters["u_near"] = aCamera.near();
 								fallbackParameters["u_far"] = aCamera.far();
 
+								fallbackParameters["u_lightPoint.position"] = light.getPosition();
+								fallbackParameters["u_lightPoint.ambient"] = light.getAmbient();
+								fallbackParameters["u_lightPoint.diffuse"] = light.getDiffuse();
+								fallbackParameters["u_lightPoint.specular"] = light.getSpecular();
+
+								fallbackParameters["u_lightPoint.constant"] = light.getConstant();
+								fallbackParameters["u_lightPoint.linear"] = light.getLinear();
+								fallbackParameters["u_lightPoint.quadratic"] = light.getQuadratic();
+
 								GL_CHECK(glPatchParameteri(GL_PATCH_VERTICES, 3));
 								for (const auto& data : renderData) {
 												const glm::mat4& modelMat = data.modelMat;
@@ -55,7 +70,7 @@ public:
 												const OGLGeometry& geometry = static_cast<const OGLGeometry&>(data.mGeometry);
 
 												fallbackParameters["u_modelMat"] = modelMat;
-												fallbackParameters["u_normalMat"] = glm::mat3(modelMat);
+												fallbackParameters["u_normalMat"] = glm::transpose(glm::inverse(glm::mat3(modelMat)));
 
 												shaderProgram.use();
 												shaderProgram.setMaterialParameters(params.mParameterValues, fallbackParameters);

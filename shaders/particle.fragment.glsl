@@ -18,6 +18,8 @@ struct PointLight {
     float quadratic;
 };
 
+uniform sampler2DArray u_textures;
+
 uniform PointLight u_lightPoint; 
 uniform Material u_material;
 uniform vec3 u_viewPos;
@@ -27,12 +29,16 @@ in GS_OUT {
     vec3 normal;
     vec2 texCoord;
     vec4 color;
+    flat int texIndex;
 } fs_in;
 
 out vec4 FragColor;
 
 void main()
 {  
+    vec4 color = texture(u_textures, vec3(fs_in.texCoord, fs_in.texIndex));
+    if (color.a < 0.1) discard;
+
     vec3 norm = normalize(fs_in.normal);
 
     vec3 lightDir = normalize(u_lightPoint.position - fs_in.worldPos);
@@ -42,7 +48,7 @@ void main()
     float attenuation = 1.0 / (u_lightPoint.constant + u_lightPoint.linear * distance + u_lightPoint.quadratic * (distance * distance));
 
     // Ambient calculations
-    vec3 ambient = u_lightPoint.ambient * vec3(u_material.diffuse); // color
+    vec3 ambient = u_lightPoint.ambient * color.xyz;
 
     // Diffuse calculations
     float diff = max(dot(norm, lightDir), 0.0);
@@ -60,5 +66,5 @@ void main()
 
     vec3 result = ambient + diffuse + specular;
 
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, color.a);
 }

@@ -150,11 +150,9 @@ int main() {
 												{ 0.032f }, // quadratic: reduces light much faster as distance grows
 								};
 
-								std::array<SimpleScene, 4> scenes{
+								std::array<SimpleScene, 2> scenes{
 									createParticleScene(materialFactory, geometryFactory),
-									createCubeScene(materialFactory, geometryFactory),
-									createInstancedCubesScene(materialFactory, geometryFactory),
-									createMonkeyScene(materialFactory, geometryFactory)
+									createInstancedCubesScene(materialFactory, geometryFactory)
 								};
 
 								Renderer renderer(materialFactory);

@@ -11,6 +11,7 @@ in VS_OUT {
     vec3 position;
     vec4 color;
     float size;
+    flat int texIndex;
 } gs_in[];
 
 out GS_OUT {
@@ -18,6 +19,7 @@ out GS_OUT {
     vec3 normal;
     vec2 texCoord;
     vec4 color;
+    flat int texIndex;
 } gs_out;
 
 void emitParticleVertex(vec3 pos, vec2 texCoord, vec3 normal)
@@ -28,6 +30,7 @@ void emitParticleVertex(vec3 pos, vec2 texCoord, vec3 normal)
     gs_out.texCoord = texCoord;
     gs_out.normal = normal;
     gs_out.color = gs_in[0].color;
+    gs_out.texIndex = gs_in[0].texIndex;
 
     EmitVertex();
 }

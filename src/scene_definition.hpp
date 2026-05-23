@@ -46,75 +46,6 @@ inline std::shared_ptr<MeshObject> getFloor() {
 				return plane;
 }
 
-
-inline SimpleScene createCubeScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
-				SimpleScene scene;
-				{
-								auto cube = std::make_shared<Cube>();
-
-								cube->setName("CUBE1");
-								cube->setPosition(glm::vec3(0.75f, 0.0f, 0.0f));
-								cube->addMaterial(
-												"solid",
-												MaterialParameters(
-																"material",
-																RenderStyle::Solid,
-																{
-																	{ "configuration", static_cast<unsigned int>(DIFFUSE) },
-																	// { "configuration", static_cast<unsigned int>(DEBUG) },
-																	{ "u_diffuseTexture", TextureInfo("brick_wall/Brick_Wall_012_COLOR.jpg") },
-																	{ "u_specularTexture", TextureInfo("brick_wall/Brick_Wall_012_ROUGH.jpg") },
-																	{ "u_normalTexture", TextureInfo("brick_wall/Brick_Wall_012_NORM.jpg") },
-																	{ "u_displacementTexture", TextureInfo("brick_wall/Brick_Wall_012_DISP.png") },
-																	{ "u_ambientOccTexture", TextureInfo("brick_wall/Brick_Wall_012_OCC.jpg") },
-																}
-																)
-								);
-								cube->addMaterial(
-												"wireframe",
-												MaterialParameters(
-																"solid_color",
-																RenderStyle::Wireframe,
-																{}
-												)
-								);
-								cube->prepareRenderData(aMaterialFactory, aGeometryFactory);
-								scene.addObject(cube);
-				}
-				{
-								auto cube = std::make_shared<Cube>();
-
-								cube->setName("CUBE2");
-								cube->setPosition(glm::vec3(-0.75f, 0.0f, 0.0f));
-								cube->addMaterial(
-												"solid",
-												MaterialParameters(
-																"material",
-																RenderStyle::Solid,
-																{
-																	{ "configuration", static_cast<unsigned int>(DIFFUSE | SPECULAR | BUMP) },
-																	{ "u_diffuseTexture", TextureInfo("brick_wall/Brick_Wall_012_COLOR.jpg") },
-																	{ "u_specularTexture", TextureInfo("brick_wall/Brick_Wall_012_ROUGH.jpg") },
-																	{ "u_normalTexture", TextureInfo("brick_wall/Brick_Wall_012_NORM.jpg") },
-																	{ "u_displacementTexture", TextureInfo("brick_wall/Brick_Wall_012_DISP.png") },
-																	{ "u_ambientOccTexture", TextureInfo("brick_wall/Brick_Wall_012_OCC.jpg") },
-																}
-																)
-								);
-								cube->addMaterial(
-												"wireframe",
-												MaterialParameters(
-																"solid_color",
-																RenderStyle::Wireframe,
-																{}
-												)
-								);
-								cube->prepareRenderData(aMaterialFactory, aGeometryFactory);
-								scene.addObject(cube);
-				}
-				return scene;
-}
-
 inline SimpleScene createInstancedCubesScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
 				SimpleScene scene;
 				std::vector<VertexColor> instanceAttributes;
@@ -157,16 +88,27 @@ inline SimpleScene createInstancedCubesScene(MaterialFactory& aMaterialFactory, 
 inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
 				SimpleScene scene;
 
-				auto particleGenerator = std::make_shared<ParticleGenerator>(10);
+				std::vector<fs::path> texturePaths = {
+								"resources/textures/particles/test/01.png",
+								"resources/textures/particles/test/02.png",
+								"resources/textures/particles/test/03.png",
+								"resources/textures/particles/test/04.png"};
+
+				auto particleGenerator = std::make_shared<ParticleGenerator>(10, texturePaths);
+
+				TextureInfo particleTextures;
+				particleTextures.textureData = particleGenerator->getTextureArray();
+
 				particleGenerator->addMaterial(
 								"solid",
 								MaterialParameters(
 												"particle",
 												RenderStyle::Solid,
 												{
-																{ "u_material.diffuse", glm::vec3(0.0f, 0.5f, 0.7f) },
-																{ "u_material.specular", glm::vec3(0.8f, 0.9f, 1.0f) },
-																{ "u_material.shininess", 32.0f }
+																{ "u_material.diffuse", glm::vec3(1.0f, 1.0f, 1.0f) },
+																{ "u_material.specular", glm::vec3(1.0f, 1.0f, 1.0f) },
+																{ "u_material.shininess", 32.0f },
+																{ "u_textures", particleTextures }
 												}
 								)
 				);
@@ -179,77 +121,5 @@ inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, Geomet
 				floor->prepareRenderData(aMaterialFactory, aGeometryFactory);
 				scene.addObject(floor);
 
-				return scene;
-}
-
-inline SimpleScene createMonkeyScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
-				SimpleScene scene;
-				{
-								auto mesh = std::make_shared<LoadedMeshObject>("./resources/geometry/monkey.obj");
-								mesh->setScale(glm::vec3(0.5));
-								mesh->setPosition(glm::vec3(-0.7, 0.0f, 0.0f));
-								mesh->setRotation(glm::vec3(0.0f, glm::radians(180.0f), 0.0f));
-								mesh->setName("MONKEY1");
-								mesh->addMaterial(
-												"solid",
-												MaterialParameters(
-																"pn_triangles",
-																RenderStyle::Solid,
-																{
-																	{"u_inner", 1 },
-																	{"u_outer", 1 },
-																	{"u_solidColor", glm::vec4(0,0.5,0.5,1)}
-																},
-																true)
-								);
-								mesh->addMaterial(
-												"wireframe",
-												MaterialParameters(
-																"pn_triangles_solid",
-																RenderStyle::Wireframe,
-																{
-																	{"u_inner", 1 },
-																	{"u_outer", 1 },
-																},
-																true)
-																);
-								mesh->prepareRenderData(aMaterialFactory, aGeometryFactory);
-
-								scene.addObject(mesh);
-				}
-				{
-								int innerFactor = 3;
-								int outerFactor = 3;
-								auto mesh = std::make_shared<LoadedMeshObject>("./resources/geometry/monkey.obj");
-								mesh->setScale(glm::vec3(0.5));
-								mesh->setPosition(glm::vec3(0.7, 0.0f, 0.0f));
-								mesh->setRotation(glm::vec3(0.0f, glm::radians(180.0f), 0.0f));
-								mesh->setName("MONKEY2");
-								mesh->addMaterial(
-												"solid",
-												MaterialParameters(
-																"pn_triangles",
-																RenderStyle::Solid,
-																{
-																	{"u_inner", innerFactor },
-																	{"u_outer", outerFactor },
-																	{"u_solidColor", glm::vec4(0,0.5,0.5,1)}
-																},
-																true)
-								);
-								mesh->addMaterial(
-												"wireframe",
-												MaterialParameters(
-																"pn_triangles_solid",
-																RenderStyle::Wireframe,
-																{
-																	{"u_inner", innerFactor },
-																	{"u_outer", outerFactor },
-																},
-																true)
-																);
-								mesh->prepareRenderData(aMaterialFactory, aGeometryFactory);
-								scene.addObject(mesh);
-				}
 				return scene;
 }

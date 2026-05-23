@@ -37,7 +37,7 @@ protected:
 	void getTextures(MaterialParameterValues &aParams, MaterialFactory &aMaterialFactory) {
 		for (auto &value : aParams) {
 			TextureInfo * texture = std::get_if<TextureInfo>(&(value.second));
-			if (!texture) {
+			if (!texture || texture->textureData) {
 				continue;
 			}
 			texture->textureData = aMaterialFactory.getTexture(texture->name);

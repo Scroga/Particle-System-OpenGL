@@ -8,7 +8,10 @@
 #include "scene_object.hpp"
 #include "cube.hpp"
 #include "instanced_cube.hpp"
-#include "particle_generator.hpp"
+
+#include "sparks_particle_generator.hpp"
+#include "snow_particle_generator.hpp"
+#include "fire_particle_generator.hpp"
 
 #include "material_factory.hpp"
 #include "geometry_factory.hpp"
@@ -25,76 +28,53 @@ constexpr unsigned int SHADOW = 1 << 5;
 constexpr unsigned int DEBUG = 1 << 7;
 
 
-inline std::shared_ptr<MeshObject> getFloor() {
+inline std::shared_ptr<MeshObject> getFloor(const glm::vec3& color) {
 				auto plane = std::make_shared<LoadedMeshObject>("./resources/geometry/plane.obj");
 				plane->setScale(glm::vec3(100.0));
 				plane->setPosition(glm::vec3(0.0f, -3.0f, 0.0f));
 				plane->setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-
 				plane->addMaterial(
 								"solid",
 								MaterialParameters(
 												"object_light",
 												RenderStyle::Solid,
 												{
-																{ "u_material.diffuse", glm::vec3(0.5f, 0.6f, 0.7f) },
+																{ "u_material.diffuse", color },
 																{ "u_material.specular", glm::vec3(0.3f, 0.3f, 0.3f) },
-																{ "u_material.shininess", 32.0f }
+																{ "u_material.shininess", 48.0f }
 												}
 								)
 				);
 				return plane;
 }
 
-inline SimpleScene createInstancedCubesScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
-				SimpleScene scene;
-				std::vector<VertexColor> instanceAttributes;
-				for (float x = -6.0f; x <= 6.0f; x += 1.5f) {
-								for (float y = -6.0f; y <= 6.0f; y += 1.5f) {
-												for (float z = -6.0f; z <= 6.0f; z += 1.5f) {
-																float red = (((instanceAttributes.size() + 31415) * 325) % 255) / 255.0f;
-																float green = (((instanceAttributes.size() + 81812) * 17) % 255) / 255.0f;
-																float blue = (((instanceAttributes.size() + 563) * 999) % 255) / 255.0f;
-																instanceAttributes.emplace_back(glm::vec3(x, y, z), glm::vec3(red, green, blue));
-												}
-								}
-				}
-				auto instancedCube = std::make_shared<InstancedCube>(std::move(instanceAttributes));
-				instancedCube->setScale(glm::vec3(0.1, 0.1, 0.1));
-				instancedCube->addMaterial(
-								"solid",
-								MaterialParameters(
-												"instanced",
-												RenderStyle::Solid,
-												{
-													{"u_solidColor", glm::vec4(0,0.5,0.7,1)}
-												}
-								)
-				);
-				instancedCube->addMaterial(
-								"wireframe",
-								MaterialParameters(
-												"solid_color",
-												RenderStyle::Wireframe,
-												{}
-								)
-				);
-				instancedCube->prepareRenderData(aMaterialFactory, aGeometryFactory);
-
-				scene.addObject(instancedCube);
-				return scene;
-}
-
-inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
+inline SimpleScene createSnowScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
 				SimpleScene scene;
 
+				auto floor = getFloor(glm::vec3(0.3f, 0.4f, 0.5f));
+				floor->prepareRenderData(aMaterialFactory, aGeometryFactory);
+				scene.addObject(floor);
+
+				float spawnPosY = 17.0f;
+				float floorPosY = floor->getPosition().y;
+				float range = 15.0f;
+				float size = 0.5f;
+				std::size_t maxParticleCount = 5000;
+				float maxLifeTime = 12.0f;
+				float spawnRate = 150.0f;
 				std::vector<fs::path> texturePaths = {
-								"resources/textures/particles/test/01.png",
-								"resources/textures/particles/test/02.png",
-								"resources/textures/particles/test/03.png",
-								"resources/textures/particles/test/04.png"};
+								"resources/textures/particles/snow/01.png",
+								"resources/textures/particles/snow/02.png" };
 
-				auto particleGenerator = std::make_shared<ParticleGenerator>(10, texturePaths);
+				auto particleGenerator = std::make_shared<SnowParticleGenerator>(
+								spawnPosY,
+								floorPosY,
+								range,
+								size,
+								maxParticleCount,
+								maxLifeTime,
+								spawnRate,
+								texturePaths);
 
 				TextureInfo particleTextures;
 				particleTextures.textureData = particleGenerator->getTextureArray();
@@ -107,7 +87,7 @@ inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, Geomet
 												{
 																{ "u_material.diffuse", glm::vec3(1.0f, 1.0f, 1.0f) },
 																{ "u_material.specular", glm::vec3(1.0f, 1.0f, 1.0f) },
-																{ "u_material.shininess", 32.0f },
+																{ "u_material.shininess", 64.0f },
 																{ "u_textures", particleTextures }
 												}
 								)
@@ -117,9 +97,129 @@ inline SimpleScene createParticleScene(MaterialFactory& aMaterialFactory, Geomet
 
 				scene.addObject(particleGenerator);
 
-				auto floor = getFloor();
+				return scene;
+}
+
+inline SimpleScene createSparksScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
+				SimpleScene scene;
+
+				auto floor = getFloor(glm::vec3(0.3f, 0.4f, 0.5f));
 				floor->prepareRenderData(aMaterialFactory, aGeometryFactory);
 				scene.addObject(floor);
+
+				float floorPosY = floor->getPosition().y;
+				glm::vec3 spawnPos{ 0.0f, floorPosY, 0.0f };
+				glm::vec3 shootDir{ 1.0f, 1.0f, 0.0f };
+				float spread = 0.35f;
+				float minSpeed = 4.0f;
+				float maxSpeed = 8.0f;
+				float size = 0.08f;
+				std::size_t maxParticleCount = 1500;
+				float maxLifeTime = 4.0f;
+				float spawnRate = 200.0f;
+				std::vector<fs::path> texturePaths = {
+								"resources/textures/particles/sparks/01.png",
+								"resources/textures/particles/sparks/02.png",
+								"resources/textures/particles/sparks/03.png",
+								"resources/textures/particles/sparks/04.png",
+								"resources/textures/particles/sparks/05.png" };
+
+				auto particleGenerator = std::make_shared<SparksParticleGenerator>(
+								spawnPos,
+								shootDir,
+								floorPosY,
+								spread,
+								minSpeed,
+								maxSpeed,
+								size,
+								maxParticleCount,
+								maxLifeTime,
+								spawnRate,
+								texturePaths);
+
+				TextureInfo particleTextures;
+				particleTextures.textureData = particleGenerator->getTextureArray();
+
+				particleGenerator->addMaterial(
+								"solid",
+								MaterialParameters(
+												"particle",
+												RenderStyle::Solid,
+												{
+																{ "u_material.diffuse", glm::vec3(1.0f, 1.0f, 1.0f) },
+																{ "u_material.specular", glm::vec3(1.0f, 1.0f, 1.0f) },
+																{ "u_material.shininess", 64.0f },
+																{ "u_textures", particleTextures }
+												}
+								)
+				);
+
+				particleGenerator->prepareRenderData(aMaterialFactory, aGeometryFactory);
+
+				scene.addObject(particleGenerator);
+
+				return scene;
+}
+
+inline SimpleScene createFireScene(MaterialFactory& aMaterialFactory, GeometryFactory& aGeometryFactory) {
+				SimpleScene scene;
+
+				auto floor = getFloor(glm::vec3(0.3f, 0.4f, 0.5f));
+				floor->prepareRenderData(aMaterialFactory, aGeometryFactory);
+				scene.addObject(floor);
+
+				float upAcceleration = 0.2f;
+				float animationSpeed = 15.0f;
+				float spawnRadius = 1.2f;
+				float centerPull = 0.3f;
+				float horizontalDamping = 1.4f;
+				const glm::vec3& center{ 0.0f, -2.7f, 0.0f };
+				std::size_t maxParticleCount = 1000;
+				float maxLifeTime = 3.0f;
+				float spawnRate = 80.0f;
+				std::vector<fs::path> texturePaths = {
+								"resources/textures/particles/fire/01.png",
+								"resources/textures/particles/fire/02.png",
+								"resources/textures/particles/fire/03.png",
+								"resources/textures/particles/fire/04.png",
+								"resources/textures/particles/fire/05.png",
+								"resources/textures/particles/fire/06.png",
+								"resources/textures/particles/fire/07.png",
+								"resources/textures/particles/fire/08.png",
+								"resources/textures/particles/fire/09.png" };
+
+				auto particleGenerator = std::make_shared<FireParticleGenerator>(
+								upAcceleration,
+								animationSpeed,
+								spawnRadius,
+								centerPull,
+								horizontalDamping,
+								center,
+								maxParticleCount,
+								maxLifeTime,
+								spawnRate,
+								texturePaths);
+
+				TextureInfo particleTextures;
+				particleTextures.textureData = particleGenerator->getTextureArray();
+
+				particleGenerator->addMaterial(
+								"solid",
+								MaterialParameters(
+												"particle",
+												RenderStyle::Solid,
+												{
+																{ "u_material.diffuse", glm::vec3(1.0f, 0.6f, 0.3f) },
+																{ "u_material.specular", glm::vec3(1.0f, 0.6f, 0.3f) },
+																{ "u_material.shininess", 12.0f },
+																{ "u_textures", particleTextures }
+												}
+								)
+				);
+
+				particleGenerator->prepareRenderData(aMaterialFactory, aGeometryFactory);
+
+				scene.addObject(particleGenerator);
 
 				return scene;
 }

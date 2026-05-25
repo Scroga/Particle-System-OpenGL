@@ -63,7 +63,7 @@ public:
 		return std::optional<RenderData>();
 	}
 
-	virtual void update(double aDeltaTime) {}
+	virtual void update(float aDeltaTime) {}
 	virtual void prepareRenderData(MaterialFactory &aMaterialFactory, GeometryFactory &aGeometryFactory) {};
 
 

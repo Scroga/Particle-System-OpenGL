@@ -1,4 +1,4 @@
-#include <iostream>3
+#include <iostream>
 #include <cassert>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -42,16 +42,12 @@ void printInfo() {
 								<< "Camera:\n"
 								<< "  R        - reset camera position and rotation\n"
 								<< "\n"
-								<< "Depth of field parameters:\n"
-								<< "  Up       - increase focus distance\n"
-								<< "  Down     - decrease focus distance\n"
-								<< "  Right    - increase radius\n"
-								<< "  Left     - decrease radius\n"
-								<< "  >        - increase smoothness\n"
-								<< "  <        - decrease smoothness\n"
+								<< "Scenes:\n"
+								<< "  1       - snow scene\n"
+								<< "  2       - sparks scene\n"
+								<< "  3       - fire scene\n"
 								<< "\n"
-								<< "Debug / info:\n"
-								<< "  F        - toggle debug mode\n"
+								<< "Info:\n"
 								<< "  I        - print this info\n"
 								<< "================\n\n";
 }
@@ -118,6 +114,9 @@ int main() {
 																				camera.setPosition(cameraPosition);
 																				camera.resetRotation();
 																				break;
+																case GLFW_KEY_I:
+																				printInfo();
+																				break;
 																case GLFW_KEY_1:
 																				config.currentSceneIdx = 0;
 																				break;
@@ -142,30 +141,31 @@ int main() {
 
 								PointLight pointLight{
 												{ 0.0f, 2.0f, 0.0f }, // position
-												{ 0.8f, 0.8f, 0.9f }, // ambient
-												{ 0.7f, 0.7f, 0.7f }, // diffuse
-												{ 0.8f, 0.8f, 0.9f }, // specular
+												{ 1.0f, 1.0f, 1.0f }, // ambient
+												{ 1.0f, 1.0f, 1.0f }, // diffuse
+												{ 1.0f, 1.0f, 1.0f }, // specular
 												{ 1.0f },  // constant: makes the whole light weaker
-												{ 0.15f }, // linear: reduces light gradually with distance
+												{ 0.05f }, // linear: reduces light gradually with distance
 												{ 0.032f }, // quadratic: reduces light much faster as distance grows
 								};
 
-								std::array<SimpleScene, 2> scenes{
-									createParticleScene(materialFactory, geometryFactory),
-									createInstancedCubesScene(materialFactory, geometryFactory)
+								std::array<SimpleScene, 3> scenes{
+									createSnowScene(materialFactory, geometryFactory),
+									createSparksScene(materialFactory, geometryFactory),
+									createFireScene(materialFactory, geometryFactory)
 								};
 
 								Renderer renderer(materialFactory);
 
-								float previousTime = static_cast<float>(glfwGetTime());
+								double previousTime = glfwGetTime();
 
 								renderer.initialize();
 								window.runLoop([&] {
-												float currentTime = static_cast<float>(glfwGetTime());
-												float deltaTime = currentTime - previousTime;
+												double currentTime = glfwGetTime();
+												double deltaTime = currentTime - previousTime;
 												previousTime = currentTime;
 
-												scenes[config.currentSceneIdx].update(deltaTime);
+												scenes[config.currentSceneIdx].update(static_cast<float>(deltaTime));
 
 												renderer.clear();
 												renderer.renderScene(scenes[config.currentSceneIdx], camera, pointLight);

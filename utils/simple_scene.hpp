@@ -12,7 +12,7 @@ public:
 		mObjects.push_back(aNewObject);
 	}
 
-	void update(double aDeltaTime) {
+	void update(float aDeltaTime) {
 					for (auto& object : mObjects) {
 									object->update(aDeltaTime);
 					}

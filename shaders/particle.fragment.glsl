@@ -37,7 +37,9 @@ out vec4 FragColor;
 void main()
 {  
     vec4 color = texture(u_textures, vec3(fs_in.texCoord, fs_in.texIndex));
-    if (color.a < 0.1) discard;
+    color *= fs_in.color;
+    float alpha = color.a;
+    if (alpha < 0.1) discard;
 
     vec3 norm = normalize(fs_in.normal);
 
@@ -66,5 +68,5 @@ void main()
 
     vec3 result = ambient + diffuse + specular;
 
-    FragColor = vec4(result, color.a);
+    FragColor = vec4(result, alpha);
 }

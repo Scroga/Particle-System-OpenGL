@@ -1,7 +1,29 @@
-# gl_tutorials
-Short demos and tutorials for OpenGL and other graphic libraries.
+# Particle System
+## Author: Ilia Riabko
+
+This project implements a real-time particle system in OpenGL. It demonstrates three particle effects: snow, sparks, and fire. Each particle has its own position, velocity, acceleration, lifetime, color, size, and texture index. The particle state is updated every frame on the CPU.
+
+The system is based on a common `ParticleGeneratorBase` class, which handles particle storage, spawning, buffer setup, and uploading instance data to the GPU. Specific effects are implemented in derived classes, where each class defines its own particle movement and appearance rules.
+
+Particles are rendered using instanced `GL_POINTS`. A geometry shader expands each point into a camera-facing quad, so each particle behaves like a billboard. Textures are stored in a `sampler2DArray` uniform texture array, allowing every particle to select a different texture layer using its texture index.
+
+## Controls
+| Control          | Action                             |
+| ---------------- | ---------------------------------- |
+| **W / S**        | Move camera forward / backward     |
+| **A / D**        | Move camera left / right           |
+| **Q / E**        | Move camera down / up              |
+| **Mouse**        | Rotate camera                      |
+| **R**            | Reset camera position and rotation |
+| **I**            | Print controls information         |
+| **1**            | Switch to the snow scene           |
+| **2**            | Switch to the sparks scene         |
+| **3**            | Switch to the fire scene           |
+
 
 ## Dependencies
+### CMake
+Folders such as `resources/` and `shaders/` are automatically copied into appropriate directory on each application build, so there is no need to copy them manually.
 
 ### Loading library
 

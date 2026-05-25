@@ -24,9 +24,11 @@ out GS_OUT {
 
 void emitParticleVertex(vec3 pos, vec2 texCoord, vec3 normal)
 {
-    gl_Position = u_projMat * u_viewMat * vec4(pos, 1.0);
+    vec4 worldPos = u_modelMat * vec4(pos, 1.0);
 
-    gs_out.worldPos = vec3(u_modelMat * vec4(pos, 1.0));
+    gl_Position = u_projMat * u_viewMat * worldPos;
+    
+    gs_out.worldPos = worldPos.xyz;
     gs_out.texCoord = texCoord;
     gs_out.normal = normal;
     gs_out.color = gs_in[0].color;
